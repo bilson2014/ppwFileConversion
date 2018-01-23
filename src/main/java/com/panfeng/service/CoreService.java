@@ -8,4 +8,5 @@ import org.springframework.web.multipart.MultipartFile;
 public interface CoreService {
 	public String getFile();
 	public File convertFile(MultipartFile multipartFile);
+	public File convertToPdf(MultipartFile multipartFile);
 }

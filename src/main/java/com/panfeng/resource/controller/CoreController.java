@@ -46,4 +46,33 @@ public class CoreController {
 			e.printStackTrace();
 		}
 	}
+	@RequestMapping("/convertPdf")
+	public void convertPdf(MultipartFile file,final HttpServletResponse response) {
+		File resfile=coreService.convertToPdf(file);
+		try {
+			InputStream inputStream=new FileInputStream(resfile);
+			ServletOutputStream servletOutputStream=response.getOutputStream();
+			response.reset();
+			response.setCharacterEncoding("utf-8");
+			response.setContentType("application/octet-stream");
+			response.setContentLength(inputStream.available());
+			String filename=URLEncoder.encode(resfile.getName(), "UTF-8");
+			response.setHeader("Content-Disposition", "attachment; filename=\""
+					+  filename+ "\"\r\n");
+			byte[] data = new byte[1024];
+			int index = 0;
+			while ((index = inputStream.read(data)) != -1) {
+				servletOutputStream.write(data, 0, index);
+			}
+			servletOutputStream.flush();
+			inputStream.close();
+			servletOutputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//删除无用文件
+		if(resfile!=null && resfile.exists()){
+			resfile.delete();
+		}
+	}
 }

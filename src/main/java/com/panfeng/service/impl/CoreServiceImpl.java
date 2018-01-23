@@ -1,6 +1,7 @@
 package com.panfeng.service.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
@@ -63,5 +64,43 @@ public class CoreServiceImpl implements CoreService {
 
 	public String getFile() {
 		return "";
+	}
+
+	@Override
+	public File convertToPdf(MultipartFile multipartFile) {
+
+		String fileName = multipartFile.getOriginalFilename();
+		File file = new File(Constants.TEMP_DIR, multipartFile.getOriginalFilename());
+		try {
+			InputStream inputStream = multipartFile.getInputStream();
+			FileOutputStream fileOutputStream = new FileOutputStream(file);
+			FileUtils.saveTo(inputStream, fileOutputStream);
+			fileOutputStream.flush();
+			inputStream.close();
+			fileOutputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		String extName = FileUtils.getExtName(fileName, ".");
+		boolean isDoc = VerifyFileUtils.verifyDocFile(extName);
+		File pdfFile=null;
+		if (isDoc) {
+			String name = fileName.substring(0, fileName.indexOf('.'));
+			String namepdf = name + ".pdf";
+			if (!extName.toLowerCase().equals("pdf")) {
+				// 将文件转换至pdf
+				pdfFile = new File(Constants.TEMP_DIR, namepdf);
+				PDFConverHtml pdfConverHtml = new PDFConverHtml(file, pdfFile);
+				pdfConverHtml.conver();
+			} else {
+				pdfFile = file;
+			}
+		}
+
+		if(file.exists() && !extName.toLowerCase().equals("pdf")){
+			file.delete();
+		}
+		return pdfFile;
 	}
 }
